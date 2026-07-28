@@ -72,5 +72,14 @@ site_template_dict = {
     "https://www.rymerleiloes.com.br": SiteConfig(
         RymerParser(),
         AlexandreLeiloeiroNavigator()
+    ),
+    "https://www.monizdearagao.leilao.br/": SiteConfig(
+        MonizDeAragaoParser(),
+        AlexandreLeiloeiroNavigator()
+    ),
+    "https://www.leiloesja.com.br/": SiteConfig(
+        LeiloesJaParser(),
+        LeiloesJaNavigator(),
+        auction_navbar_selector=Selector("css", "li.leiloes a[href='/agenda']")
     )
 }

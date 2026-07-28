@@ -13,7 +13,7 @@ async def main():
 
         num_auctions_for_site = 0
         total_auctions = 0
-        for site in sites_list[16:17]:
+        for site in sites_list[18:19]:
             url = site.strip()
 
             site_config = site_template_dict.get(url, None)
@@ -32,19 +32,20 @@ async def main():
                 if cards:
                     await cards[0].wait_for(
                         state="visible",
-                        timeout=30000
+                        timeout=60000
                     )
 
                 for i, card in enumerate(cards):
 
-                    # if i == 37:
+                    # if i == 3:
                     #     print(await card.evaluate("el => el.outerHTML"))
-                    #     break
+                        # break
 
                     auction = await parser.parse_auction(card)
                     print(auction)
                     # break
                     num_auctions_for_site += 1
+
                 if not await navigator.has_next_page(page):
                     break
 

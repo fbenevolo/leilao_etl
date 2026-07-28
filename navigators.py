@@ -23,3 +23,16 @@ class AlexandreLeiloeiroNavigator(AuctionNavigator):
 
     async def goto_next_page(self, page):
         return
+
+
+class LeiloesJaNavigator(AuctionNavigator):
+    async def has_next_page(self, page) -> bool:
+            next_button = page.locator(".show-pagination li:last-child a")
+            href = await next_button.get_attribute("href")
+            return href is not None
+
+    async def goto_next_page(self, page):
+        next_button = page.locator(".show-pagination li:last-child a")
+        await next_button.click()
+        await page.wait_for_load_state("networkidle")
+    

@@ -8,9 +8,17 @@ class Selector:
     strategy: str
     value: str
 
+
 class AuctionType(Enum):
     AUCTION = "auction"
     DIRECT_SALE = "direct_sale"
+
+
+class RoundStatus(Enum):
+    OPEN = "em aberto"
+    CLOSED = "encerrado"
+    SOON = "em breve"
+
 
 @dataclass
 class AuctionRound:

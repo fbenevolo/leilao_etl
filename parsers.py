@@ -1,6 +1,6 @@
 import re
 from datetime import datetime
-from models import AuctionRound, AuctionParser, ProposalPhase
+from models import AuctionRound, AuctionParser, ProposalPhase, RoundStatus
 from formatters import *
 
 class AlexandreCostaParser(AuctionParser):
@@ -443,11 +443,7 @@ class PortellaLeiloesParser(DePaulaParser):
             data_div = item.locator("div.data")
             classes = await data_div.get_attribute("class") or ""
 
-            status = (
-                "encerrado"
-                if "encerrado" in classes.split()
-                else "em aberto"
-            )
+            status = RoundStatus.CLOSED.value if "encerrado" in classes.split() else RoundStatus.OPEN.value
 
             rounds.append(
                 AuctionRound(
@@ -513,12 +509,12 @@ class LeilaoBrasilParser(AlexandreLeiloeiroParser):
                         .replace(",", ".")
                     )
 
-            round_status = "em aberto"
+            round_status = RoundStatus.OPEN.value
             auction_status = await self._status(card)
             if "data-off" in classes.split():
-                round_status = "encerrado"
+                round_status = RoundStatus.CLOSED.value
             elif auction_status.lower() == "em breve":
-                round_status = auction_status
+                round_status = RoundStatus.SOON.value
 
             rounds.append(
                 AuctionRound(
@@ -669,3 +665,141 @@ class RymerParser(AuctionParser):
         return await card.locator(
             ".cont-foto img"
         ).first.get_attribute("src")
+
+
+class MonizDeAragaoParser(AlexandreCostaParser):
+    pass
+
+
+class LeiloesJaParser(AuctionParser):
+    async def get_auction_cards(self, page):
+        cards = page.locator(
+            ".flex-leiloes article"
+        )
+
+        return [
+            cards.nth(i)
+            for i in range(await cards.count())
+        ]
+
+    async def _has_direct_sale(self, card):
+        text = await card.locator(".absolute-tipo").inner_text()
+        return "venda direta" in text.lower()
+
+    async def _title(self, card):
+        return await card.locator("h3").text_content()
+        
+    async def _description(self, card):
+        # O card não possui um campo de descrição/endereço.
+        return None
+
+    async def _status(self, card):
+        return None
+
+    async def _rounds(self, card):
+        rounds = []
+
+        items = card.locator(".cont-datas li")
+        count = await items.count()
+
+        for i in range(count):
+            item = items.nth(i)
+
+            title = (
+                await item.locator("strong")
+                .inner_text()
+            ).strip()
+
+            if "leilão" not in title.lower():
+                continue
+
+            text = await item.inner_text()
+
+            match = re.search(
+                r"(\d{2}/\d{2}/\d{4}).*?(\d{2}):(\d{2})",
+                text
+            )
+
+            if not match:
+                continue
+
+            end = format_datetime(
+                f"{match.group(1)} {match.group(2)}:{match.group(3)}",
+                "%d/%m/%Y %H:%M"
+            )
+            
+            bid_match = re.search(
+                r"R\$\s*([\d\.,]+)",
+                text
+            )
+            initial_bid = format_money(bid_match.group(1)) if bid_match else None
+
+            # Status
+            classes = await item.get_attribute("class") or ""
+            status = RoundStatus.CLOSED.value if "encerrado" in classes else RoundStatus.OPEN.value
+
+            rounds.append(
+                AuctionRound(
+                    name=title,
+                    end=end,
+                    status=status,
+                    initial_bid=initial_bid
+                )
+            )
+
+        return rounds
+
+    async def _proposal_deadline(self, card):
+        item = card.locator(
+            ".cont-datas li"
+        ).first
+        text = (await item.inner_text()).strip()
+
+
+        if "breve" in text.lower():
+            return None
+
+        match = re.search(
+            r"(\d{1,2})\s+de\s+([A-Za-zç]+)\s+de\s+(\d{4})",
+            text,
+            re.IGNORECASE
+        )
+
+        if not match:
+            return None
+
+        months = {
+            "janeiro": 1,
+            "fevereiro": 2,
+            "março": 3,
+            "marco": 3,
+            "abril": 4,
+            "maio": 5,
+            "junho": 6,
+            "julho": 7,
+            "agosto": 8,
+            "setembro": 9,
+            "outubro": 10,
+            "novembro": 11,
+            "dezembro": 12,
+        }
+
+        day = int(match.group(1))
+        month = months[match.group(2).lower()]
+        year = int(match.group(3))
+
+        return [
+            ProposalPhase(
+                name="Proposta",
+                deadline=datetime(year, month, day)
+            )
+        ]
+
+    async def _minimum_bid(self, card):
+        # Não há valor mínimo no card de venda direta.
+        return None
+
+    async def _image_url(self, card):
+        return await card.locator(
+            ".cont-foto > img"
+        ).get_attribute("src")
