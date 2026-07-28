@@ -61,19 +61,23 @@ class AuctionNavigator(ABC):
 class AuctionParser(ABC):
     async def select_section_in_navbar(self, page, navbar_selector):
         if navbar_selector is not None:
+            locator = None
             if navbar_selector.strategy == "css":
-                await page.locator(navbar_selector.value).click()
+                locator = page.locator(navbar_selector.value)
             elif navbar_selector.strategy == "text":
-                await page.get_by_text(navbar_selector.value).click()
+                locator = page.get_by_text(navbar_selector.value)
+
+            await locator.wait_for(state="visible", timeout=30000)
+            await locator.click(trial=True)
+            await locator.click(force=True)
+            await page.wait_for_timeout(5000)
 
     async def parse_auction(self, card):
         auction_type = await self._detect_auction_type(card)
-
         if auction_type == AuctionType.AUCTION:
             rounds = await self._rounds(card)
             proposal_deadline = None
             minimum_bid = None
-
         else:
             rounds = None
             proposal_deadline = await self._proposal_deadline(card)
@@ -130,9 +134,16 @@ class AuctionParser(ABC):
         pass
 
 
+class WaitStrategy(ABC):
+    @abstractmethod
+    async def wait(self, page):
+        pass
+
+
 @dataclass
 class SiteConfig:
     auction_parser: AuctionParser
     auction_navigator: AuctionNavigator
+    wait_strategy: WaitStrategy | None = None
     auction_navbar_selector: Selector | None = None
     show_more_selector: Selector | None = None

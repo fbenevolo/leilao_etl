@@ -803,3 +803,110 @@ class LeiloesJaParser(AuctionParser):
         return await card.locator(
             ".cont-foto > img"
         ).get_attribute("src")
+
+
+class JVLeiloesParser(AuctionParser):
+    async def _has_direct_sale(self, card):
+        return False
+
+    async def _proposal_deadline(self, card):
+        return None
+
+    async def _minimum_bid(self, card):
+        return None
+    
+    async def get_auction_cards(self, page):
+        pass
+
+    async def _title(self, card):
+        pass
+        
+    async def _description(self, card):
+        pass
+
+    async def _status(self, card):
+        pass
+
+    async def _rounds(self, card):
+        pass
+
+    async def _image_url(self, card):
+        pass
+
+
+class BrameLeiloesParser(AuctionParser):
+    async def get_auction_cards(self, page):
+            cards = page.locator("div[id^='event-']")
+
+            return [
+                cards.nth(i)
+                for i in range(await cards.count())
+            ]
+
+    async def _title(self, card):
+        return (
+            await card.locator(".MuiCardContent-root > div:first-child p")
+            .text_content()
+        ).strip()
+        
+    async def _description(self, card):
+        return None
+
+    async def _status(self, card):
+        return None
+
+    async def _rounds(self, card):
+        rounds = []
+        items = card.locator(".MuiTimeline-root li")
+
+        for i in range(await items.count()):
+            item = items.nth(i)
+
+            text = (
+                await item.locator(
+                    ".MuiTimelineContent-root span"
+                ).text_content()
+            ).strip()
+
+            match = re.search(
+                r"(\d+ª)\s+praça:\s*encerra\s*"
+                r"(\d{2}/\d{2}/\d{4})\s*-\s*"
+                r"(\d{2}):(\d{2})",
+                text,
+                re.IGNORECASE,
+            )
+
+            if not match:
+                continue
+
+            round_name = f"{match.group(1)} Praça"
+
+            end = format_datetime(
+                f"{match.group(2)} {match.group(3)}:{match.group(4)}",
+                "%d/%m/%Y %H:%M"
+            )
+
+            status = None
+            dot = item.locator(".MuiTimelineDot-root")
+
+            classes = await dot.get_attribute("class") or ""
+
+            if "MuiTimelineDot-filled" in classes:
+                status = RoundStatus.OPEN.value
+            elif "MuiTimelineDot-outlined" in classes:
+                status = RoundStatus.SOON.value
+
+            rounds.append(
+                AuctionRound(
+                    name=round_name,
+                    end=end,
+                    status=status,
+                )
+            )
+
+        return rounds
+
+    async def _image_url(self, card):
+        return await card.locator(
+            ".MuiCardMedia-root"
+        ).get_attribute("src")

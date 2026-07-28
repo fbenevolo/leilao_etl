@@ -3,6 +3,7 @@ import pandas as pd
 from models import SiteConfig, Selector
 from parsers import *
 from navigators import *
+from strategy import *
 
 
 df = pd.read_excel("leiloeiros_associados.xlsx")
@@ -81,5 +82,15 @@ site_template_dict = {
         LeiloesJaParser(),
         LeiloesJaNavigator(),
         auction_navbar_selector=Selector("css", "li.leiloes a[href='/agenda']")
+    ),
+    "https://www.jvleiloes.lel.br": SiteConfig(
+        JVLeiloesParser(),
+        JVLeiloesNavigator()
+    ),
+    "https://www.brameleiloes.com.br": SiteConfig(
+        BrameLeiloesParser(),
+        BrameLeiloesNavigator(),
+        wait_strategy=BrameLeiloesStrategy(),
+        auction_navbar_selector=Selector("css", 'a[href*="todos-eventos"]')
     )
 }

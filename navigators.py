@@ -35,4 +35,11 @@ class LeiloesJaNavigator(AuctionNavigator):
         next_button = page.locator(".show-pagination li:last-child a")
         await next_button.click()
         await page.wait_for_load_state("networkidle")
-    
+
+
+class JVLeiloesNavigator(AlexandreLeiloeiroNavigator):
+    pass
+
+
+class BrameLeiloesNavigator(AlexandreLeiloeiroNavigator):
+    pass
