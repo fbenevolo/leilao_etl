@@ -13,7 +13,7 @@ async def main():
 
         num_auctions_for_site = 0
         total_auctions = 0
-        for site in sites_list[20:21]:
+        for site in sites_list[25:26]:
             url = site.strip()
 
             site_config = site_template_dict.get(url, None)

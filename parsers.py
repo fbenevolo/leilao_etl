@@ -102,18 +102,33 @@ class AlexandreLeiloeiroParser(AuctionParser):
             rounds.append(
                 AuctionRound(
                     name=(name or "").strip(),
-                    start=(start or "").strip(),
-                    end=(end or "").strip(),
+                    start=start,
+                    end=end,
                 )
             )
     
         return rounds
 
     async def _round_start(self, round_card):
-        return await round_card.locator(".col-line span").first.text_content()
+        value = await round_card.locator(
+            ".col-line span"
+        ).first.text_content()
+
+        return format_datetime(
+            value,
+            "%d/%m/%Y %H:%M"
+        )
+
 
     async def _round_end(self, round_card):
-        return await round_card.locator(".col-line span").last.text_content()
+        value = await round_card.locator(
+            ".col-line span"
+        ).last.text_content()
+
+        return format_datetime(
+            value,
+            "%d/%m/%Y %H:%M"
+        )
 
     async def _image_url(self, card):
         image = card.locator(".cont-picture img")
@@ -144,7 +159,7 @@ class AndresRosaCostaParser(AlexandreCostaParser):
         for i in range(await blocks.count()):
             text = await blocks.nth(i).inner_text()
     
-            if "LEILÃO:" not in text:
+            if "leilão" not in text.lower():
                 continue
     
             round_data = self._parse_round(text)
@@ -910,3 +925,7 @@ class BrameLeiloesParser(AuctionParser):
         return await card.locator(
             ".MuiCardMedia-root"
         ).get_attribute("src")
+
+
+class RicartParser(GustavoLeiloeiroParser):
+    pass

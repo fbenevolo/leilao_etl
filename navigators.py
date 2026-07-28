@@ -43,3 +43,7 @@ class JVLeiloesNavigator(AlexandreLeiloeiroNavigator):
 
 class BrameLeiloesNavigator(AlexandreLeiloeiroNavigator):
     pass
+
+
+class RicartNavigator(AlexandreLeiloeiroNavigator):
+    pass

@@ -92,5 +92,12 @@ site_template_dict = {
         BrameLeiloesNavigator(),
         wait_strategy=BrameLeiloesStrategy(),
         auction_navbar_selector=Selector("css", 'a[href*="todos-eventos"]')
+    ),
+    "https://www.schulmannleiloes.com.br": ...,
+    "https://www.maiconleiloeiro.com.br": ...,
+    "https://www.marioricart.lel.br": SiteConfig(
+        RicartParser(),
+        RicartNavigator()
     )
+
 }
