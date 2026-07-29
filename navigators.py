@@ -47,3 +47,7 @@ class BrameLeiloesNavigator(AlexandreLeiloeiroNavigator):
 
 class RicartNavigator(AlexandreLeiloeiroNavigator):
     pass
+
+
+class MauricioKronembergNavigator(AlexandreCostaNavigator):
+    pass

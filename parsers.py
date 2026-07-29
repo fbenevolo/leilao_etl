@@ -30,8 +30,8 @@ class AlexandreCostaParser(AuctionParser):
     
         # Procurar todos os elementos que representam um round
         # Eles sempre contêm exatamente 2 elementos .Anuncio1_data
-        candidates = rounds_container.locator("div:has(.Anuncio1_data)")
-    
+        candidates = rounds_container.locator("div:has(> .Anuncio1_data)")
+
         count = await candidates.count()
     
         for i in range(count):
@@ -39,19 +39,34 @@ class AlexandreCostaParser(AuctionParser):
     
             data_fields = candidate.locator(".Anuncio1_data")
     
-            # Um round válido tem exatamente 2 campos: nome + data
-            if await data_fields.count() == 2:
-                name = (await data_fields.nth(0).text_content() or "").strip()
-                date = (await data_fields.nth(1).text_content() or "").strip()
+            # Um round válido tem 2 campos nome + data ou 3 campos
+                # nome + data/hora
+                # nome + data + hora
+            data_fields_count = await data_fields.count()
+            if data_fields_count < 2:
+                continue
     
-                # Evitar capturar containers intermediários vazios
-                if name and date:
-                    rounds.append(
-                        AuctionRound(
-                            name=name,
-                            end=date
-                        )
-                    )
+            name = (await data_fields.nth(0).text_content() or "").strip()
+            date = (await data_fields.nth(1).text_content() or "").strip().replace("h", "") # remover o "h" da hora caso exista
+            hour = None
+
+            if data_fields_count >= 3:
+                hour = (await data_fields.nth(2).text_content() or "").strip().replace("h", "")
+
+            if hour:
+                date = f"{date} {hour}"
+
+            end = format_datetime(
+                date,
+                "%d/%m/%Y %H:%M"
+            )
+
+            rounds.append(
+                AuctionRound(
+                    name=name,
+                    end=end
+                )
+            )
     
         return rounds
 
@@ -928,4 +943,8 @@ class BrameLeiloesParser(AuctionParser):
 
 
 class RicartParser(GustavoLeiloeiroParser):
+    pass
+
+
+class MauricioKronembergParser(AlexandreCostaParser):
     pass

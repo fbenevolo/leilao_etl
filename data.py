@@ -98,6 +98,10 @@ site_template_dict = {
     "https://www.marioricart.lel.br": SiteConfig(
         RicartParser(),
         RicartNavigator()
+    ),
+    "https://www.mklance.com.br/": SiteConfig(
+        MauricioKronembergParser(),
+        MauricioKronembergNavigator()
     )
 
 }

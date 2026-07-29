@@ -1,5 +1,5 @@
 import asyncio
-
+import traceback
 from playwright.async_api import async_playwright
 from data import sites_list, site_template_dict
 
@@ -13,7 +13,7 @@ async def main():
 
         num_auctions_for_site = 0
         total_auctions = 0
-        for site in sites_list[25:26]:
+        for site in sites_list[26:27]:
             url = site.strip()
 
             site_config = site_template_dict.get(url, None)
@@ -44,9 +44,9 @@ async def main():
                     )
 
                 for i, card in enumerate(cards):
-                    # if i == 3:
                     # print(await card.evaluate("el => el.outerHTML"))
-                    # break
+                    # if i == 3:
+                    #    break
 
                     auction = await parser.parse_auction(card)
                     print(auction)
@@ -70,6 +70,7 @@ async def main():
     except Exception as e:
         print(type(e))
         print(e)
+        traceback.print_exc()
         await page.wait_for_timeout(10000)
     finally:
         if browser is not None:
