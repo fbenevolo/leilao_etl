@@ -102,6 +102,9 @@ site_template_dict = {
     "https://www.mklance.com.br/": SiteConfig(
         MauricioKronembergParser(),
         MauricioKronembergNavigator()
+    ),
+    "https://mauriciomarizleiloes.com.br/": SiteConfig(
+        MauricioMunizParser(),
+        MauricioMunizNavigator()
     )
-
 }

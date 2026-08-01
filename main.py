@@ -13,7 +13,7 @@ async def main():
 
         num_auctions_for_site = 0
         total_auctions = 0
-        for site in sites_list[26:27]:
+        for site in sites_list[27:28]:
             url = site.strip()
 
             site_config = site_template_dict.get(url, None)
@@ -46,7 +46,7 @@ async def main():
                 for i, card in enumerate(cards):
                     # print(await card.evaluate("el => el.outerHTML"))
                     # if i == 3:
-                    #    break
+                    # break
 
                     auction = await parser.parse_auction(card)
                     print(auction)

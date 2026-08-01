@@ -51,3 +51,7 @@ class RicartNavigator(AlexandreLeiloeiroNavigator):
 
 class MauricioKronembergNavigator(AlexandreCostaNavigator):
     pass
+
+
+class MauricioMunizNavigator(AlexandreCostaNavigator):
+    pass

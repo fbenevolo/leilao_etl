@@ -948,3 +948,57 @@ class RicartParser(GustavoLeiloeiroParser):
 
 class MauricioKronembergParser(AlexandreCostaParser):
     pass
+
+
+class MauricioMunizParser(FacanhaLeiloesParser):
+    async def _rounds(self, card):
+        rounds = []
+
+        round_cards = card.locator(".cont-datas > li")
+
+        for i in range(await round_cards.count()):
+            round_card = round_cards.nth(i)
+
+            name = (
+                await round_card
+                .locator(".line-1 strong")
+                .text_content()
+                or ""
+            ).strip()
+
+            col_lines = round_card.locator(".line-2 .col-line")
+
+            if await col_lines.count() < 2:
+                continue
+
+            start = (
+                await col_lines
+                .nth(0)
+                .locator("span")
+                .text_content()
+                or ""
+            ).strip()
+
+            end = (
+                await col_lines
+                .nth(1)
+                .locator("span")
+                .text_content()
+                or ""
+            ).strip()
+
+            rounds.append(
+                AuctionRound(
+                    name=name,
+                    start=format_datetime(
+                        start,
+                        "%d/%m/%Y %H:%M"
+                    ),
+                    end=format_datetime(
+                        end,
+                        "%d/%m/%Y %H:%M"
+                    ),
+                )
+            )
+
+        return rounds
