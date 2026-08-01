@@ -10,3 +10,13 @@ class BrameLeiloesStrategy(WaitStrategy):
             state="visible",
             timeout=60000
         )
+
+
+class MauricioMarcelloStrategy(WaitStrategy):
+    async def wait(self, page):
+        await page.wait_for_load_state("domcontentloaded")
+
+        await page.locator("ul.cont-datas").first.wait_for(
+            state="visible",
+            timeout=60000,
+        )

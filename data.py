@@ -106,5 +106,9 @@ site_template_dict = {
     "https://mauriciomarizleiloes.com.br/": SiteConfig(
         MauricioMunizParser(),
         MauricioMunizNavigator()
+    ),
+    "https://www.mauromarcello.lel.br": SiteConfig(
+        MauricioMarcelloParser(),
+        MauricioMarcelloNavigator()
     )
 }

@@ -55,3 +55,7 @@ class MauricioKronembergNavigator(AlexandreCostaNavigator):
 
 class MauricioMunizNavigator(AlexandreCostaNavigator):
     pass
+
+
+class MauricioMarcelloNavigator(AlexandreLeiloeiroNavigator):
+    pass

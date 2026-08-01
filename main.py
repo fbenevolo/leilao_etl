@@ -13,7 +13,7 @@ async def main():
 
         num_auctions_for_site = 0
         total_auctions = 0
-        for site in sites_list[27:28]:
+        for site in sites_list[28:29]:
             url = site.strip()
 
             site_config = site_template_dict.get(url, None)
@@ -33,7 +33,12 @@ async def main():
 
             if strategy:
                 await strategy.wait(page)
+
             await parser.select_section_in_navbar(page, site_config.auction_navbar_selector)
+
+            # wait for page elements to load (in case of React application etc)
+            await page.wait_for_timeout(15000)
+
 
             while True:
                 cards = await parser.get_auction_cards(page)
@@ -44,9 +49,9 @@ async def main():
                     )
 
                 for i, card in enumerate(cards):
-                    # print(await card.evaluate("el => el.outerHTML"))
-                    # if i == 3:
-                    # break
+                    # if i == 2:
+                    #     print(await card.evaluate("el => el.outerHTML"))
+                    #     break
 
                     auction = await parser.parse_auction(card)
                     print(auction)

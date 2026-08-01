@@ -1002,3 +1002,87 @@ class MauricioMunizParser(FacanhaLeiloesParser):
             )
 
         return rounds
+
+
+class MauricioMarcelloParser(AuctionParser):
+    async def get_auction_cards(self, page):
+        container = page.locator(
+            "div.grid.grid-cols-1.md\\:grid-cols-2.lg\\:grid-cols-3.xl\\:grid-cols-4.gap-6.mb-8"
+        )
+        cards = container.locator("xpath=./div")
+
+        return [
+                cards.nth(i)
+                for i in range(await cards.count())
+            ]
+    
+    async def _title(self, card):
+        return (
+            await card.locator("h3").text_content()
+        )
+        
+    async def _description(self, card):
+        return None
+
+    async def _status(self, card):
+            return (
+                await card.locator(
+                    "div.absolute.top-2.left-2 > div"
+                ).text_content()
+            )
+
+
+    async def _rounds(self, card):
+        rounds = []
+
+        round_cards = card.locator(
+            "div.flex.items-center.justify-between.text-xs"
+        )
+
+        for i in range(await round_cards.count()):
+            round_card = round_cards.nth(i)
+
+            name = (
+                await round_card.locator(
+                    "span.text-nowrap"
+                ).text_content()
+                or ""
+            ).strip()
+
+            values = round_card.locator(
+                "div.flex.flex-col.items-end > span"
+            )
+
+            if await values.count() < 2:
+                continue
+
+            end_text = (
+                await values.nth(0).text_content()
+                or ""
+            ).replace(",", "").strip()
+
+            bid_text = (
+                await values.nth(1).text_content()
+                or ""
+            ).strip()
+
+            initial_bid = None
+
+            if bid_text.startswith("R$"):
+                initial_bid = format_money(bid_text)
+
+            rounds.append(
+                AuctionRound(
+                    name=name,
+                    end=format_datetime(
+                        end_text,
+                        "%d/%m/%Y %H:%M"
+                    ),
+                    initial_bid=initial_bid
+                )
+            )
+
+        return rounds
+
+    async def _image_url(self, card):
+        return await card.locator("img").first.get_attribute("src")
