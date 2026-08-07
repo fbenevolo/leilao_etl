@@ -17,7 +17,9 @@ site_template_dict = {
         AlexandreCostaParser(),
         AlexandreCostaNavigator(),
         auction_navbar_selector=Selector("css", "div[class='Topo1_mnu_PrincL']"),
-        show_more_selector=Selector("css", ".Anuncio1_seletores")
+        show_more_selector=[
+            Selector("css", ".Anuncio1_seletores")
+        ]
     ),
     "https://www.alexandroleiloeiro.com.br": SiteConfig(
         AlexandreLeiloeiroParser(),
@@ -34,12 +36,16 @@ site_template_dict = {
     "https://www.andrealeiloeira.lel.br": SiteConfig(
         AndresRosaCostaParser(),
         AlexandreCostaNavigator(),
-        auction_navbar_selector=Selector("css", "a[class='Anuncio1_seletor_linknaveg']")
+        auction_navbar_selector=[
+            Selector("css", "a[class='Anuncio1_seletor_linknaveg']")
+        ]
     ),
     "https://www.bspleiloes.com.br": SiteConfig(
         AlexandreCostaParser(),
         AlexandreCostaNavigator(),
-        show_more_selector=Selector("css", ".Anuncio1_seletores")
+        show_more_selector=[
+            Selector("css", ".Anuncio1_seletores")
+        ]
     ),
     "https://www.depaulaonline.com.br": SiteConfig(
         DePaulaParser(),
@@ -48,7 +54,9 @@ site_template_dict = {
     "https://www.edgarcarvalholeiloeiro.com.br/": SiteConfig(
         EdgarCarvalhoParser(),
         AlexandreLeiloeiroNavigator(),
-        auction_navbar_selector=Selector("css", "li.nav-leiloes a[href='/leiloes']")
+        auction_navbar_selector=[
+            Selector("css", "li.nav-leiloes a[href='/leiloes']")
+        ]
     ),
     "https://fabianoayuppleiloeiro.com.br/": SiteConfig(
         DePaulaParser(),
@@ -81,7 +89,9 @@ site_template_dict = {
     "https://www.leiloesja.com.br/": SiteConfig(
         LeiloesJaParser(),
         LeiloesJaNavigator(),
-        auction_navbar_selector=Selector("css", "li.leiloes a[href='/agenda']")
+        auction_navbar_selector=[
+            Selector("css", "li.leiloes a[href='/agenda']")
+        ]
     ),
     "https://www.jvleiloes.lel.br": SiteConfig(
         JVLeiloesParser(),
@@ -91,7 +101,9 @@ site_template_dict = {
         BrameLeiloesParser(),
         BrameLeiloesNavigator(),
         wait_strategy=BrameLeiloesStrategy(),
-        auction_navbar_selector=Selector("css", 'a[href*="todos-eventos"]')
+        auction_navbar_selector=[
+            Selector("css", 'a[href*="todos-eventos"]')
+        ]
     ),
     "https://www.schulmannleiloes.com.br": ...,
     "https://www.maiconleiloeiro.com.br": ...,
@@ -110,5 +122,23 @@ site_template_dict = {
     "https://www.mauromarcello.lel.br": SiteConfig(
         MauricioMarcelloParser(),
         MauricioMarcelloNavigator()
+    ),
+    "https://www.murilochaves.com.br": SiteConfig(
+        MuriloChavesParser(),
+        MuriloChavesNavigator()
+    ),
+    "https://www.machadoleiloes.com.br": SiteConfig(
+        MachadoLeiloesParser(),
+        MachadoLeiloesNavigator()
+    ),
+    "https://www.paulobotelholeiloeiro.com.br/": SiteConfig(
+        PauloBotelhoParser(),
+        PauloBotelhoNavigator(),
+        auction_navbar_selector=[
+            Selector("css", "a[href='/lotes/imoveis']"),
+            Selector("css", "a[href='/lotes/veiculos']"),
+            Selector("css", "a[href='/lotes/diversos']")
+
+        ]
     )
 }

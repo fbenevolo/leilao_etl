@@ -59,3 +59,41 @@ class MauricioMunizNavigator(AlexandreCostaNavigator):
 
 class MauricioMarcelloNavigator(AlexandreLeiloeiroNavigator):
     pass
+
+
+class MuriloChavesNavigator(AlexandreLeiloeiroNavigator):
+    pass
+
+
+class MachadoLeiloesNavigator(AlexandreLeiloeiroNavigator):
+    pass
+
+
+class PauloBotelhoNavigator(AuctionNavigator):
+    async def has_next_page(self, page) -> bool:
+        pagination = page.locator("div.pagination").first
+        if await pagination.count() == 0:
+            return False
+
+        next_button = pagination.locator("a[rel='next']")
+        return await next_button.count() > 0
+
+    async def goto_next_page(self, page):
+        pagination = page.locator("div.pagination").first
+        if await pagination.count() == 0:
+            raise RuntimeError("Pagination not found.")
+
+        next_button = pagination.locator("a[rel='next']")
+        if await next_button.count() == 0:
+            raise RuntimeError("Next page button not found.")
+
+        current_url = page.url
+
+        await next_button.click()
+
+        await page.wait_for_url(
+            lambda url: url != current_url,
+            timeout=60000,
+        )
+
+        await page.wait_for_load_state("domcontentloaded")

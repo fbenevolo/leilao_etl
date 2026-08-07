@@ -2,6 +2,7 @@ from abc import ABC, abstractmethod
 from dataclasses import dataclass
 from datetime import datetime
 from enum import Enum
+from typing import List
 
 @dataclass(frozen=True)
 class Selector:
@@ -19,6 +20,11 @@ class RoundStatus(Enum):
     CLOSED = "encerrado"
     SOON = "em breve"
 
+
+class ItemNegociated(Enum):
+    IMOVEL = "imovel"
+    CARRO = "carro"
+    DIVERSOS = "diversos"
 
 @dataclass
 class AuctionRound:
@@ -47,6 +53,8 @@ class AuctionModel:
     rounds: list[AuctionRound] | None =  None
     image_url: str | None = None
 
+    item_negociated: str | None = ItemNegociated.IMOVEL.value
+
 
 class AuctionNavigator(ABC):
     @abstractmethod
@@ -66,6 +74,16 @@ class AuctionParser(ABC):
                 locator = page.locator(navbar_selector.value)
             elif navbar_selector.strategy == "text":
                 locator = page.get_by_text(navbar_selector.value)
+
+            count = await locator.count()
+            if count > 1:
+                for i in range(count):
+                    candidate = locator.nth(i)
+                    if await candidate.is_visible():
+                        locator = candidate
+                        break
+            else:
+                locator = locator.first
 
             await locator.wait_for(state="visible", timeout=30000)
             await locator.click(trial=True)
@@ -91,13 +109,13 @@ class AuctionParser(ABC):
             rounds=rounds,
             proposal_deadline=proposal_deadline,
             minimum_bid=minimum_bid,
-            image_url=await self._image_url(card)
+            image_url=await self._image_url(card),
+            item_negociated=await self._item_negociated(card)
         )
 
     async def _detect_auction_type(self, card):
         if await self._has_direct_sale(card):
             return AuctionType.DIRECT_SALE
-
         return AuctionType.AUCTION
 
     async def _has_direct_sale(self, card):
@@ -108,6 +126,10 @@ class AuctionParser(ABC):
 
     async def _minimum_bid(self, card):
         return None
+
+    async def _item_negociated(self, card) -> str | None:
+            return ItemNegociated.IMOVEL.value
+    
     
     @abstractmethod
     async def get_auction_cards(self, page):
@@ -145,5 +167,5 @@ class SiteConfig:
     auction_parser: AuctionParser
     auction_navigator: AuctionNavigator
     wait_strategy: WaitStrategy | None = None
-    auction_navbar_selector: Selector | None = None
+    auction_navbar_selector: List[Selector] | None = None
     show_more_selector: Selector | None = None

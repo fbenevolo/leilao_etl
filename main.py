@@ -3,17 +3,49 @@ import traceback
 from playwright.async_api import async_playwright
 from data import sites_list, site_template_dict
 
+
+async def page_loop(page, parser, navigator):
+    num_auctions_for_site = 0
+
+
+    while True:
+        cards = await parser.get_auction_cards(page)
+        if cards:
+            await cards[0].wait_for(
+                state="visible",
+                timeout=60000
+            )
+
+        for i, card in enumerate(cards):
+            # if i == 2:
+            print(await card.evaluate("el => el.outerHTML"))
+            break
+
+            auction = await parser.parse_auction(card)
+            print(auction)
+            num_auctions_for_site += 1
+            # break
+        break
+        # if not await navigator.has_next_page(page):
+        #     break
+
+        # await navigator.goto_next_page(page)
+
+    return num_auctions_for_site
+
+
 async def main():
     p = await async_playwright().start()
     browser = None
+
+    total_auctions = 0
+    auctions_for_site = 0
 
     try:
         browser = await p.chromium.launch(headless=False)
         page = await browser.new_page()
 
-        num_auctions_for_site = 0
-        total_auctions = 0
-        for site in sites_list[28:29]:
+        for site in sites_list[31:32]:
             url = site.strip()
 
             site_config = site_template_dict.get(url, None)
@@ -30,46 +62,31 @@ async def main():
             strategy = site_config.wait_strategy
             parser = site_config.auction_parser
             navigator = site_config.auction_navigator
+            navbar_section_elements = site_config.auction_navbar_selector
 
             if strategy:
                 await strategy.wait(page)
 
-            await parser.select_section_in_navbar(page, site_config.auction_navbar_selector)
-
             # wait for page elements to load (in case of React application etc)
-            await page.wait_for_timeout(15000)
+            await page.wait_for_timeout(7500)
 
+            if len(navbar_section_elements) < 1:
+                auctions_scraped = await page_loop(page, parser, navigator)
+                auctions_for_site += auctions_scraped
+            else:
+                for section in navbar_section_elements:
+                    await parser.select_section_in_navbar(page, section)
+                    await page.wait_for_timeout(7500)
+                    auctions_scraped = await page_loop(page, parser, navigator)
+                    auctions_for_site += auctions_scraped
 
-            while True:
-                cards = await parser.get_auction_cards(page)
-                if cards:
-                    await cards[0].wait_for(
-                        state="visible",
-                        timeout=60000
-                    )
-
-                for i, card in enumerate(cards):
-                    # if i == 2:
-                    #     print(await card.evaluate("el => el.outerHTML"))
-                    #     break
-
-                    auction = await parser.parse_auction(card)
-                    print(auction)
-                    # break
-                    num_auctions_for_site += 1
-
-                if not await navigator.has_next_page(page):
-                    break
-
-                await navigator.goto_next_page(page)
-
-            print(f"Num auction for site {site}: {num_auctions_for_site}")
-            total_auctions += num_auctions_for_site
-            num_auctions_for_site = 0
+            print(f"Num auction for site {site}: {auctions_for_site}")
 
             # break
 
             print("\n\n\n")
+            total_auctions += auctions_for_site
+            auctions_for_site = 0
 
         print(total_auctions)
     except Exception as e:

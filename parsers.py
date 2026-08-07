@@ -1,6 +1,6 @@
 import re
 from datetime import datetime
-from models import AuctionRound, AuctionParser, ProposalPhase, RoundStatus
+from models import AuctionRound, AuctionParser, ItemNegociated, ProposalPhase, RoundStatus
 from formatters import *
 
 class AlexandreCostaParser(AuctionParser):
@@ -1086,3 +1086,132 @@ class MauricioMarcelloParser(AuctionParser):
 
     async def _image_url(self, card):
         return await card.locator("img").first.get_attribute("src")
+
+
+class MuriloChavesParser(AuctionParser):
+    async def get_auction_cards(self, page):
+        pass
+
+    async def _title(self, card):
+        pass
+        
+    async def _description(self, card):
+        pass
+
+    async def _status(self, card):
+        pass
+
+    async def _rounds(self, card):
+        pass
+
+    async def _image_url(self, card):
+        pass
+
+
+class MachadoLeiloesParser(AuctionParser):
+    async def get_auction_cards(self, page):
+        pass
+
+    async def _title(self, card):
+        pass
+        
+    async def _description(self, card):
+        pass
+
+    async def _status(self, card):
+        pass
+
+    async def _rounds(self, card):
+        pass
+
+    async def _image_url(self, card):
+        pass
+
+
+class PauloBotelhoParser(AuctionParser):
+    async def get_auction_cards(self, page):
+        cards = page.locator("#featured-cars .featured-item")
+
+        return [
+            cards.nth(i)
+            for i in range(await cards.count())
+        ]
+
+    async def _title(self, card):
+        return (
+            await card.locator("h2").text_content()
+            or ""
+        ).strip()
+
+    async def _description(self, card):
+        return None
+
+    async def _status(self, card):
+        # Não há informação suficiente no card.
+        return None
+
+    async def _minimum_bid(self, card):
+        value = (
+            await card.locator(".down-content > span").text_content()
+            or ""
+        ).strip()
+
+        if not value:
+            return None
+
+        value = re.sub(r"[^\d,]", "", value)
+        return format_money(value)
+
+    async def _rounds(self, card):
+        rounds = []
+
+        text = (
+            await card.locator("p").last.text_content()
+            or ""
+        )
+
+        pattern = re.compile(
+            r"(\d+ª?)\s*:\s*"
+            r"(\d{2}/\d{2}/\d{2}\s+\d{2}:\d{2})"
+            r"\s*até\s*"
+            r"(\d{2}/\d{2}/\d{2}\s+\d{2}:\d{2})"
+        )
+
+        for number, start, end in pattern.findall(text):
+            rounds.append(
+                AuctionRound(
+                    name=f"{number} Praça",
+                    start=format_datetime(
+                        start,
+                        "%d/%m/%y %H:%M",
+                    ),
+                    end=format_datetime(
+                        end,
+                        "%d/%m/%y %H:%M",
+                    ),
+                )
+            )
+
+        return rounds
+
+    async def _item_negociated(self, card):
+        image_url = await card.locator("img").get_attribute("src")
+
+        if not image_url:
+            return None
+
+        image_url = image_url.lower()
+
+        if "realestate" in image_url:
+            return ItemNegociated.IMOVEL.value
+
+        if "vehicle" in image_url:
+            return ItemNegociated.CARRO.value
+
+        if "estate" in image_url:
+            return ItemNegociated.DIVERSOS.value
+
+        return None
+
+    async def _image_url(self, card):
+        return await card.locator("img").get_attribute("src")
