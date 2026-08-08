@@ -169,3 +169,7 @@ class SiteConfig:
     wait_strategy: WaitStrategy | None = None
     auction_navbar_selector: List[Selector] | None = None
     show_more_selector: Selector | None = None
+
+    @property
+    def has_navbar_sections(self) -> bool:
+        return bool(self.auction_navbar_selector)

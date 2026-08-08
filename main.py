@@ -17,19 +17,19 @@ async def page_loop(page, parser, navigator):
             )
 
         for i, card in enumerate(cards):
-            # if i == 2:
-            print(await card.evaluate("el => el.outerHTML"))
-            break
+            # if i == 1:
+            #     print(await card.evaluate("el => el.outerHTML"))
+            #     break
 
             auction = await parser.parse_auction(card)
             print(auction)
             num_auctions_for_site += 1
             # break
-        break
-        # if not await navigator.has_next_page(page):
-        #     break
+        # break
+        if not await navigator.has_next_page(page):
+            break
 
-        # await navigator.goto_next_page(page)
+        await navigator.goto_next_page(page)
 
     return num_auctions_for_site
 
@@ -45,7 +45,7 @@ async def main():
         browser = await p.chromium.launch(headless=False)
         page = await browser.new_page()
 
-        for site in sites_list[31:32]:
+        for site in sites_list[34:35]:
             url = site.strip()
 
             site_config = site_template_dict.get(url, None)
@@ -62,7 +62,6 @@ async def main():
             strategy = site_config.wait_strategy
             parser = site_config.auction_parser
             navigator = site_config.auction_navigator
-            navbar_section_elements = site_config.auction_navbar_selector
 
             if strategy:
                 await strategy.wait(page)
@@ -70,10 +69,11 @@ async def main():
             # wait for page elements to load (in case of React application etc)
             await page.wait_for_timeout(7500)
 
-            if len(navbar_section_elements) < 1:
+            if not site_config.has_navbar_sections:
                 auctions_scraped = await page_loop(page, parser, navigator)
                 auctions_for_site += auctions_scraped
             else:
+                navbar_section_elements = site_config.auction_navbar_selector
                 for section in navbar_section_elements:
                     await parser.select_section_in_navbar(page, section)
                     await page.wait_for_timeout(7500)

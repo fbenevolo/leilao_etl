@@ -306,6 +306,14 @@ class DePaulaParser(AuctionParser):
             name = None
             end = None
             initial_bid = None
+            status = None
+
+            # status definition
+            classes = await item.get_attribute("class") or ""
+            if "encerrado" in classes.split():
+                status = RoundStatus.CLOSED.value
+            else:
+                status = RoundStatus.OPEN.value
 
             if await strong.count():
                 name = (await strong.text_content()).replace(":", "").strip()
@@ -319,10 +327,9 @@ class DePaulaParser(AuctionParser):
                 )
 
                 if match:
-                    end = datetime.strptime(
+                    end = format_datetime(
                         f"{match.group(1)} {match.group(2)}",
-                        "%d/%m/%Y %H:%M",
-                    )
+                        "%d/%m/%Y %H:%M")
 
             if await span.count():
                 text = await span.text_content()
@@ -333,17 +340,14 @@ class DePaulaParser(AuctionParser):
                 )
 
                 if match:
-                    initial_bid = float(
-                        match.group(1)
-                        .replace(".", "")
-                        .replace(",", ".")
-                    )
+                    initial_bid = format_money(match.group(1))
 
             rounds.append(
                 AuctionRound(
                     name=name,
                     end=end,
                     initial_bid=initial_bid,
+                    status=status
                 )
             )
 
@@ -1215,3 +1219,7 @@ class PauloBotelhoParser(AuctionParser):
 
     async def _image_url(self, card):
         return await card.locator("img").get_attribute("src")
+
+
+class RodrigoCostaParser(DePaulaParser):
+    pass

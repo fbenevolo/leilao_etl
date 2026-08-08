@@ -97,3 +97,7 @@ class PauloBotelhoNavigator(AuctionNavigator):
         )
 
         await page.wait_for_load_state("domcontentloaded")
+
+
+class RodrigoCostaNavigator(AlexandreLeiloeiroNavigator):
+    pass

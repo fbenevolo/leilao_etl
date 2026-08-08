@@ -140,5 +140,9 @@ site_template_dict = {
             Selector("css", "a[href='/lotes/diversos']")
 
         ]
+    ),
+    "https://www.rodrigocostaleiloeiro.com.br": SiteConfig(
+        RodrigoCostaParser(),
+        RodrigoCostaNavigator()
     )
 }
